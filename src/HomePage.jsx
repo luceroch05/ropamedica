@@ -1,14 +1,64 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingCart, Heart, Star, Play, Check, TrendingUp, ArrowRight, Truck, Shield, RefreshCw, Clock, CreditCard, Gift } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-const HomePage = ({ cart, setCart,addToCart }) => {
+
+const HomePage = ({ cart, setCart, addToCart }) => {
   const [counters, setCounters] = useState({
     clients: 0,
     quality: 0,
     support: 0
   });
 
+  const [isVisible, setIsVisible] = useState({
+    hero: false,
+    products: false,
+    testimonials: false,
+    benefits: false
+  });
+
+  const heroRef = useRef(null);
+  const productsRef = useRef(null);
+  const testimonialsRef = useRef(null);
+  const benefitsRef = useRef(null);
+
   useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -100px 0px'
+    };
+
+    const observerCallback = (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const sectionName = entry.target.dataset.section;
+          setIsVisible(prev => ({ ...prev, [sectionName]: true }));
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    const refs = [
+      { ref: heroRef, name: 'hero' },
+      { ref: productsRef, name: 'products' },
+      { ref: testimonialsRef, name: 'testimonials' },
+      { ref: benefitsRef, name: 'benefits' }
+    ];
+
+    refs.forEach(({ ref, name }) => {
+      if (ref.current) {
+        ref.current.dataset.section = name;
+        observer.observe(ref.current);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible.hero) return;
+
     const duration = 2000;
     const steps = 60;
     const interval = duration / steps;
@@ -37,7 +87,7 @@ const HomePage = ({ cart, setCart,addToCart }) => {
     }, interval);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [isVisible.hero]);
 
   const products = [
     {
@@ -166,54 +216,56 @@ const HomePage = ({ cart, setCart,addToCart }) => {
     }
   ];
 
-  
-
   return (
     <main className="bg-white">
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <section ref={heroRef} className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
         <div className="absolute top-20 right-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
         <div className="absolute bottom-20 left-10 w-72 h-72 bg-cyan-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" style={{animationDelay: '1s'}}></div>
         
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8 relative z-10">
-              <div className="inline-flex items-center space-x-2 bg-blue-100 px-4 py-2 rounded-full">
+            <div className={`space-y-8 relative z-10 transition-all duration-1000 ${isVisible.hero ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12'}`}>
+              <div className="inline-flex items-center space-x-2 bg-blue-100 px-4 py-2 rounded-full animate-slideDown">
                 <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
                 <span className="text-sm font-semibold text-blue-700">Nueva Colección 2025</span>
               </div>
               
-              <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold text-slate-900 leading-tight">
+              <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold text-slate-900 leading-tight animate-slideUp">
                 Viste con
-                <span className="block mt-2 bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 bg-clip-text text-transparent">
+                <span className="block mt-2 bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 bg-clip-text text-transparent animate-gradient">
                   Profesionalismo
                 </span>
               </h2>
               
-              <p className="text-xl text-slate-600 leading-relaxed">
+              <p className="text-xl text-slate-600 leading-relaxed animate-fadeIn" style={{animationDelay: '0.2s'}}>
                 Descubre uniformes médicos que combinan estilo, comodidad y funcionalidad. Diseñados para profesionales que marcan la diferencia.
               </p>
 
-              <div className="flex flex-wrap gap-6 pt-4">
-                <div className="space-y-1">
+              <div className="flex flex-wrap gap-6 pt-4 animate-fadeIn" style={{animationDelay: '0.4s'}}>
+                <div className="space-y-1 transform hover:scale-110 transition-transform duration-300">
                   <div className="text-3xl font-bold text-blue-600">{counters.clients.toLocaleString()}+</div>
                   <div className="text-sm text-slate-600">Clientes Satisfechos</div>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 transform hover:scale-110 transition-transform duration-300">
                   <div className="text-3xl font-bold text-blue-600">{counters.quality}%</div>
                   <div className="text-sm text-slate-600">Calidad Garantizada</div>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 transform hover:scale-110 transition-transform duration-300">
                   <div className="text-3xl font-bold text-blue-600">{counters.support}/7</div>
                   <div className="text-sm text-slate-600">Soporte al Cliente</div>
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-4 pt-4">
-                <button className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-2xl font-semibold shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex items-center space-x-2">
+              <div className="flex flex-wrap gap-4 pt-4 animate-fadeIn" style={{animationDelay: '0.6s'}}>
+                
+                 <Link
+                  to="/productos"
+                  className="group inline-flex items-center px-10 py-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-2xl font-bold shadow-lg hover:shadow-2xl transition transform hover:scale-105 gap-3"
+                 >
                   <span>Explorar Catálogo</span>
                   <TrendingUp className="w-5 h-5 group-hover:translate-x-1 transition" />
-                </button>
+                </Link>
                 <button className="group px-8 py-4 bg-white text-slate-700 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 flex items-center space-x-2">
                   <Play className="w-5 h-5" />
                   <span>Ver Video</span>
@@ -221,7 +273,7 @@ const HomePage = ({ cart, setCart,addToCart }) => {
               </div>
             </div>
 
-            <div className="relative">
+            <div className={`relative transition-all duration-1000 delay-300 ${isVisible.hero ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'}`}>
               <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                 <img 
                   src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=900&fit=crop" 
@@ -249,7 +301,7 @@ const HomePage = ({ cart, setCart,addToCart }) => {
                   <div className="text-sm text-slate-600 mt-1">Clientes Felices</div>
                   <div className="flex justify-center space-x-1 mt-2">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400 animate-pulse" style={{animationDelay: `${i * 0.1}s`}} />
                     ))}
                   </div>
                 </div>
@@ -266,10 +318,10 @@ const HomePage = ({ cart, setCart,addToCart }) => {
         </div>
       </section>
 
-   {/* Products Section */}
-      <section className="py-20 px-4 bg-slate-50">
+      {/* Products Section */}
+      <section ref={productsRef} className="py-20 px-4 bg-slate-50">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
+          <div className={`text-center mb-12 transition-all duration-1000 ${isVisible.products ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
             <span className="inline-block px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold mb-4">
               Lo Más Vendido
             </span>
@@ -282,15 +334,23 @@ const HomePage = ({ cart, setCart,addToCart }) => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map(product => (
-              <div key={product.id} className="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden">
+            {products.map((product, index) => (
+              <div 
+                key={product.id} 
+                className={`group bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden ${
+                  isVisible.products ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+                }`}
+                style={{
+                  transitionDelay: `${index * 0.1}s`
+                }}
+              >
                 <div className="relative overflow-hidden bg-gradient-to-br from-slate-100 to-slate-50">
                   <img src={product.image} alt={product.name} className="w-full h-80 object-cover group-hover:scale-110 transition duration-700" />
                   <div className="absolute inset-0 bg-gradient-to-t from-blue-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
                   {product.badge && (
                     <div className="absolute top-4 left-4">
-                      <div className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-xl flex items-center gap-2">
+                      <div className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-xl flex items-center gap-2 animate-bounceIn">
                         <Star className="w-4 h-4 fill-current" />
                         {product.badge}
                       </div>
@@ -346,14 +406,28 @@ const HomePage = ({ cart, setCart,addToCart }) => {
             ))}
           </div>
 
-          {/* (el resto de la página queda igual: CTA, testimonials, benefits, etc.) */}
+          <div className={`text-center mt-16 transition-all duration-1000 delay-700 ${isVisible.products ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+            <div className="inline-flex flex-col items-center gap-4 bg-white rounded-3xl p-8 shadow-xl">
+              <p className="text-slate-600 text-lg max-w-md">
+                ¿Buscas algo específico? Explora nuestro catálogo completo con más de 50 productos
+              </p>
+
+              <Link
+                to="/productos"
+                className="group inline-flex items-center px-10 py-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-2xl font-bold shadow-lg hover:shadow-2xl transition transform hover:scale-105 gap-3"
+              >
+                <span>Ver Todos los Productos</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" />
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 px-4 bg-white">
+      <section ref={testimonialsRef} className="py-20 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
+          <div className={`text-center mb-12 transition-all duration-1000 ${isVisible.testimonials ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
             <span className="inline-block px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold mb-4">
               Testimonios
             </span>
@@ -369,18 +443,23 @@ const HomePage = ({ cart, setCart,addToCart }) => {
             {testimonials.map((testimonial, index) => (
               <div 
                 key={index}
-                className="bg-gradient-to-br from-slate-50 to-white p-8 rounded-3xl shadow-lg hover:shadow-xl transition group"
+                className={`bg-gradient-to-br from-slate-50 to-white p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-700 group ${
+                  isVisible.testimonials ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+                }`}
+                style={{
+                  transitionDelay: `${index * 0.15}s`
+                }}
               >
                 <div className="flex items-center gap-1 mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400 animate-pulse" style={{animationDelay: `${i * 0.1}s`}} />
                   ))}
                 </div>
                 <p className="text-slate-700 mb-6 leading-relaxed italic">
                   "{testimonial.text}"
                 </p>
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-lg group-hover:scale-110 transition-transform duration-300">
                     {testimonial.initial}
                   </div>
                   <div>
@@ -395,10 +474,10 @@ const HomePage = ({ cart, setCart,addToCart }) => {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-24 px-4 bg-white relative overflow-hidden">
+      <section ref={benefitsRef} className="py-24 px-4 bg-white relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-cyan-50/50"></div>
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-16">
+          <div className={`text-center mb-16 transition-all duration-1000 ${isVisible.benefits ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
             <span className="inline-block px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold mb-4">
               Beneficios Exclusivos
             </span>
@@ -414,11 +493,16 @@ const HomePage = ({ cart, setCart,addToCart }) => {
             {benefits.map((benefit, index) => (
               <div 
                 key={index}
-                className="group bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-100 hover:border-blue-200"
+                className={`group bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-700 border border-slate-100 hover:border-blue-200 ${
+                  isVisible.benefits ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+                }`}
+                style={{
+                  transitionDelay: `${index * 0.1}s`
+                }}
               >
                 <div className="relative mb-6">
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition"></div>
-                  <div className="relative w-16 h-16 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-2xl flex items-center justify-center text-white">
+                  <div className="relative w-16 h-16 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-2xl flex items-center justify-center text-white transform group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
                     {benefit.icon}
                   </div>
                 </div>
@@ -436,10 +520,12 @@ const HomePage = ({ cart, setCart,addToCart }) => {
             ))}
           </div>
 
-          <div className="mt-16 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-3xl p-10 text-center relative overflow-hidden">
+          <div className={`mt-16 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-3xl p-10 text-center relative overflow-hidden transition-all duration-1000 delay-500 ${
+            isVisible.benefits ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+          }`}>
             <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-0 left-1/4 w-64 h-64 bg-white rounded-full blur-3xl"></div>
-              <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-white rounded-full blur-3xl"></div>
+              <div className="absolute top-0 left-1/4 w-64 h-64 bg-white rounded-full blur-3xl animate-pulse"></div>
+              <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-white rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
             </div>
             <div className="relative z-10">
               <h4 className="text-3xl md:text-4xl font-bold text-white mb-4">
@@ -448,9 +534,15 @@ const HomePage = ({ cart, setCart,addToCart }) => {
               <p className="text-blue-100 text-lg mb-6 max-w-2xl mx-auto">
                 Únete a miles de profesionales que confían en MediStyle para su día a día
               </p>
-              <button className="px-8 py-4 bg-white text-blue-600 rounded-2xl font-bold shadow-xl hover:shadow-2xl transition transform hover:scale-105">
+
+
+              <Link
+                to="/productos"
+                className="mt-2 inline-block px-8 py-4 bg-white text-blue-600 rounded-2xl font-bold shadow-xl hover:shadow-2xl transition transform hover:scale-105 active:scale-95"
+              >
                 Explorar Catálogo Completo
-              </button>
+              </Link>
+             
             </div>
           </div>
         </div>
@@ -466,12 +558,91 @@ const HomePage = ({ cart, setCart,addToCart }) => {
           }
         }
         
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes bounceIn {
+          0% {
+            opacity: 0;
+            transform: scale(0.3);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.05);
+          }
+          70% {
+            transform: scale(0.9);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
+
+        @keyframes gradient {
+          0%, 100% {
+            background-size: 200% 200%;
+            background-position: left center;
+          }
+          50% {
+            background-size: 200% 200%;
+            background-position: right center;
+          }
+        }
+        
         .animate-float {
           animation: float 3s ease-in-out infinite;
+        }
+
+        .animate-slideDown {
+          animation: slideDown 0.6s ease-out;
+        }
+
+        .animate-slideUp {
+          animation: slideUp 0.8s ease-out;
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn 0.8s ease-out forwards;
+          opacity: 0;
+        }
+
+        .animate-bounceIn {
+          animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .animate-gradient {
+          animation: gradient 3s ease infinite;
         }
       `}</style>
     </main>
   );
-};
-
+}
 export default HomePage;

@@ -7,6 +7,9 @@ module.exports = {
   ],
 
   extend: {
+    fontFamily: {
+        jakarta: ['"Plus Jakarta Sans"', 'sans-serif'],
+      },
   keyframes: {
     slideDown: {
       '0%': { opacity: 0, transform: 'translateY(-10px)' },
