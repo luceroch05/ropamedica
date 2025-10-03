@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ShoppingCart, Heart, Star, SlidersHorizontal, Grid3x3, List, Search, TrendingUp, Sparkles, ChevronDown, Package, Stethoscope, User, Zap, Award, Flame } from 'lucide-react';
 
-const ProductsPage = () => {
+const ProductsPage = ({ cart, setCart,addToCart }) => {
   const [selectedCategory, setSelectedCategory] = useState('todos');
   const [viewMode, setViewMode] = useState('grid');
   const [sortBy, setSortBy] = useState('destacados');
@@ -9,7 +9,7 @@ const ProductsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [favorites, setFavorites] = useState([]);
-  const [cart, setCart] = useState([]);
+ 
 
   const products = [
     {
@@ -134,9 +134,7 @@ const ProductsPage = () => {
     );
   };
 
-  const addToCart = (product) => {
-    setCart([...cart, product]);
-  };
+
 
   const filteredProducts = products
     .filter(p => selectedCategory === 'todos' || p.category === selectedCategory)
@@ -522,17 +520,7 @@ const ProductsPage = () => {
         </div>
       </div>
 
-      {/* Floating Cart Badge */}
-      {cart.length > 0 && (
-        <div className="fixed bottom-8 right-8 z-50">
-          <button className="relative group bg-gradient-to-r from-blue-600 to-cyan-500 text-white p-4 rounded-full shadow-2xl hover:shadow-blue-500/50 transition transform hover:scale-110">
-            <ShoppingCart className="w-6 h-6" />
-            <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold animate-pulse ring-4 ring-white">
-              {cart.length}
-            </div>
-          </button>
-        </div>
-      )}
+    
     </div>
   );
 };

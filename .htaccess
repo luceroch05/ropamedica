@@ -1,0 +1,8 @@
+DirectoryIndex index.html
+
+RewriteEngine On
+RewriteBase /ropamedica/
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /ropamedica/index.html [L]
